@@ -1,12 +1,21 @@
 using OptimusFrame.Transform.Application;
 using OptimusFrame.Transform.Infrastructure;
 using OptimusFrame.Transform.Worker;
+using OptimusFrame.Transform.Worker.Configuration;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+// Configuração do RabbitMQ
+builder.Services.Configure<RabbitMqSettings>(
+builder.Configuration.GetSection(RabbitMqSettings.SectionName));
+
+// Configuração de Storage (S3)
+builder.Services.Configure<StorageSettings>(
+builder.Configuration.GetSection(StorageSettings.SectionName));
+
 // Configuração limpa seguindo Clean Architecture
 builder.Services
-    .AddApplication()      // Registra Use Cases
+    .AddApplication()    // Registra Use Cases
     .AddInfrastructure();  // Registra implementações de Infrastructure
 
 builder.Services.AddHostedService<Worker>();
