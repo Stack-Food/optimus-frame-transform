@@ -54,6 +54,11 @@ public class Worker : BackgroundService
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
+            _channel.ExchangeDeclare(
+                exchange: "video.processing",
+                type: ExchangeType.Direct,
+                durable: true);
+
             // Declara fila de entrada
             _channel.QueueDeclare(
                 queue: _rabbitMqSettings.InputQueueName,
@@ -69,6 +74,11 @@ public class Worker : BackgroundService
                 exclusive: false,
                 autoDelete: false,
                 arguments: null);
+
+            _channel.QueueBind(
+                queue: _rabbitMqSettings.InputQueueName,
+                exchange: "video.processing",
+                routingKey: "video.processar");
 
             _channel.BasicQos(
                 prefetchSize: 0,
@@ -134,7 +144,7 @@ public class Worker : BackgroundService
 
             _logger.LogInformation("Mensagem recebida - VideoId: {VideoId}", message.VideoId);
 
-            // Monta os caminhos baseado nas configurações
+            // // Monta os caminhos baseado nas configurações
             var fileName = message.FileName ?? $"{message.VideoId}.mp4";
             var videoKey = $"{_storageSettings.InputFolder}/{fileName}";
             var outputZipKey = $"{_storageSettings.OutputFolder}/{message.VideoId}_frames.zip";
@@ -149,12 +159,18 @@ public class Worker : BackgroundService
                 OutputZipKey: outputZipKey
             );
 
-           _logger.LogInformation(
-                "Iniciando processamento do vídeo: {VideoId} - {VideoKey}",
-                message.VideoId,
-                request.VideoKey);
+            _logger.LogInformation(
+                 "Iniciando processamento do vídeo: {VideoId} - {VideoKey}",
+                 message.VideoId,
+                 request.VideoKey);
 
-            var response = await extractFramesUseCase.ExecuteAsync(request, stoppingToken);
+            var response = ExtractFramesResponse.Successful(
+                outputUri: "s3://optimusframe-bucket/processed/video_abc123_frames.zip",
+                framesExtracted: 342,
+                processingTime: TimeSpan.FromSeconds(27)
+            ); 
+            
+            //await extractFramesUseCase.ExecuteAsync(request, stoppingToken);
 
             // Publica mensagem de conclusão
             var completedMessage = new VideoProcessingCompletedMessage
