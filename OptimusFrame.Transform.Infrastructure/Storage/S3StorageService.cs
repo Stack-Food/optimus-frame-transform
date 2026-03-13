@@ -54,9 +54,16 @@ public class S3StorageService : IStorageService
             await _s3Client.GetObjectMetadataAsync(bucketName, key, cancellationToken);
             return true;
         }
-        catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        catch (AmazonS3Exception ex)
         {
-           return false;
+            if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return false;
+
+            Console.WriteLine($"S3 Error: {ex.Message}");
+            Console.WriteLine($"Code: {ex.ErrorCode}");
+            Console.WriteLine($"Status: {ex.StatusCode}");
+
+            throw;
         }
     }
 }

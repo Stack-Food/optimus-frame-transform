@@ -92,7 +92,7 @@ public class ExtractFramesUseCase : IExtractFramesUseCase
                 cancellationToken);
 
             stopwatch.Stop();
-            var outputUri = $"s3://{request.BucketName}/{request.OutputZipKey}";
+            var outputUri = $"{request.OutputZipKey}";
 
             _logger.LogInformation(
                 "Extração concluída com sucesso em {ElapsedTime}ms: {OutputUri}",

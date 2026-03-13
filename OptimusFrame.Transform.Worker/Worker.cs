@@ -134,8 +134,8 @@ public class Worker : BackgroundService
 
             _logger.LogInformation("Mensagem recebida - VideoId: {VideoId}", message.VideoId);
 
-            // Monta os caminhos baseado nas configurações
-            var fileName = message.FileName ?? $"{message.VideoId}.mp4";
+            // // Monta os caminhos baseado nas configurações
+            var fileName = $"{message.VideoId}.mp4";
             var videoKey = $"{_storageSettings.InputFolder}/{fileName}";
             var outputZipKey = $"{_storageSettings.OutputFolder}/{message.VideoId}_frames.zip";
 
@@ -153,7 +153,7 @@ public class Worker : BackgroundService
                 "Iniciando processamento do vídeo: {VideoId} - {VideoKey}",
                 message.VideoId,
                 request.VideoKey);
-
+            
             var response = await extractFramesUseCase.ExecuteAsync(request, stoppingToken);
 
             // Publica mensagem de conclusão

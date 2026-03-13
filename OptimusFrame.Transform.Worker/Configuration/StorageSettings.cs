@@ -10,7 +10,7 @@ public class StorageSettings
     /// <summary>
     /// Nome do bucket S3
     /// </summary>
-    public string BucketName { get; set; } = string.Empty;
+    public string BucketName { get; set; } = "optimus-frame-core-bucket";
 
     /// <summary>
     /// Pasta de entrada onde os vídeos estão armazenados
