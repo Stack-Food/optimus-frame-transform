@@ -54,6 +54,11 @@ public class Worker : BackgroundService
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
+            _channel.ExchangeDeclare(
+                exchange: "video.processing",
+                type: ExchangeType.Direct,
+                durable: true);
+
             // Declara fila de entrada
             _channel.QueueDeclare(
                 queue: _rabbitMqSettings.InputQueueName,
@@ -69,6 +74,11 @@ public class Worker : BackgroundService
                 exclusive: false,
                 autoDelete: false,
                 arguments: null);
+
+            _channel.QueueBind(
+                queue: _rabbitMqSettings.InputQueueName,
+                exchange: "video.processing",
+                routingKey: "video.processar");
 
             _channel.BasicQos(
                 prefetchSize: 0,
