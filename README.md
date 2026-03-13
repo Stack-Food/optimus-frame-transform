@@ -1,10 +1,41 @@
 # OptimusFrame.Transform
 
-Worker Service de processamento de vídeos do sistema OptimusFrame, responsável pela extração de frames de vídeos hospedados no AWS S3, compressão em formato ZIP e publicação de eventos de conclusão via RabbitMQ.
+> ⚙️ **Worker Service de processamento assíncrono de vídeos com extração de frames usando OpenCV**
 
-## Visão Geral
+[![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.13-5C3EE8)](https://opencv.org/)
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Messaging-FF6600)](https://www.rabbitmq.com/)
+[![AWS S3](https://img.shields.io/badge/AWS-S3-FF9900)](https://aws.amazon.com/s3/)
+[![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-blue)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+
+## 📑 Índice
+
+- [Visão Geral](#-visão-geral)
+- [Arquitetura](#-arquitetura)
+- [Tecnologias Utilizadas](#-tecnologias-utilizadas)
+- [Pré-requisitos](#-pré-requisitos)
+- [Configuração](#-configuração)
+- [Como Executar](#-como-executar)
+- [Fluxo de Processamento](#-fluxo-de-processamento)
+- [Configurações de Extração](#-configurações-de-extração-de-frames)
+- [Mensageria RabbitMQ](#-mensageria-rabbitmq)
+- [Armazenamento AWS S3](#-armazenamento-aws-s3)
+- [Monitoramento e Logs](#-monitoramento-e-logs)
+- [Troubleshooting](#-troubleshooting)
+
+## 🚀 Visão Geral
 
 O **OptimusFrame.Transform** é um Worker Service (.NET 8) que atua como consumidor de mensagens RabbitMQ no pipeline de processamento de vídeos. Ele recebe notificações de novos vídeos, realiza a extração de frames utilizando OpenCV, comprime os frames em arquivo ZIP e publica o resultado no S3, notificando outros serviços sobre a conclusão do processamento.
+
+### Funcionalidades Principais
+
+- **Consumo de Mensagens**: Processa eventos da fila `video.processing.input`
+- **Download de Vídeos**: Obtém vídeos do AWS S3
+- **Extração de Frames**: Usa OpenCvSharp para extrair frames configuráveis
+- **Compressão ZIP**: Empacota frames em arquivo comprimido
+- **Upload de Resultados**: Envia ZIP processado para S3
+- **Notificação de Conclusão**: Publica eventos de sucesso/falha no RabbitMQ
+- **Tratamento Robusto de Erros**: ACK/NACK com requeue configurável
 
 ## Arquitetura
 
