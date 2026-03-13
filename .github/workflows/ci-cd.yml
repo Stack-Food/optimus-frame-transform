@@ -51,7 +51,7 @@ jobs:
         run: dotnet build OptimusFrame.Transform.sln --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test OptimusFrame.Transform.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults/ -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+        run: dotnet test OptimusFrame.Transform.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
