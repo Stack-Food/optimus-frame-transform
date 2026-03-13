@@ -1,9 +1,11 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using OptimusFrame.Transform.Domain.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OptimusFrame.Transform.Infrastructure.Storage;
 
+[ExcludeFromCodeCoverage]
 /// <summary>
 /// Implementação do IStorageService usando Amazon S3
 /// </summary>

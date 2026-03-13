@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Options;
 using OptimusFrame.Transform.Application.DTOs;
 using OptimusFrame.Transform.Application.UseCases;
@@ -7,9 +5,13 @@ using OptimusFrame.Transform.Worker.Configuration;
 using OptimusFrame.Transform.Worker.Messages;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
+using System.Text.Json;
 
 namespace OptimusFrame.Transform.Worker;
 
+[ExcludeFromCodeCoverage]
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
