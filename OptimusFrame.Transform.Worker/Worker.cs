@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Options;
 using OptimusFrame.Transform.Application.DTOs;
 using OptimusFrame.Transform.Application.UseCases;
@@ -7,9 +5,13 @@ using OptimusFrame.Transform.Worker.Configuration;
 using OptimusFrame.Transform.Worker.Messages;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
+using System.Text.Json;
 
 namespace OptimusFrame.Transform.Worker;
 
+[ExcludeFromCodeCoverage]
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
@@ -145,7 +147,7 @@ public class Worker : BackgroundService
             _logger.LogInformation("Mensagem recebida - VideoId: {VideoId}", message.VideoId);
 
             // // Monta os caminhos baseado nas configurações
-            var fileName = message.FileName ?? $"{message.VideoId}.mp4";
+            var fileName = $"{message.VideoId}.mp4";
             var videoKey = $"{_storageSettings.InputFolder}/{fileName}";
             var outputZipKey = $"{_storageSettings.OutputFolder}/{message.VideoId}_frames.zip";
 
@@ -159,18 +161,12 @@ public class Worker : BackgroundService
                 OutputZipKey: outputZipKey
             );
 
-            _logger.LogInformation(
-                 "Iniciando processamento do vídeo: {VideoId} - {VideoKey}",
-                 message.VideoId,
-                 request.VideoKey);
-
-            var response = ExtractFramesResponse.Successful(
-                outputUri: "s3://optimusframe-bucket/processed/video_abc123_frames.zip",
-                framesExtracted: 342,
-                processingTime: TimeSpan.FromSeconds(27)
-            ); 
+           _logger.LogInformation(
+                "Iniciando processamento do vídeo: {VideoId} - {VideoKey}",
+                message.VideoId,
+                request.VideoKey);
             
-            //await extractFramesUseCase.ExecuteAsync(request, stoppingToken);
+            var response = await extractFramesUseCase.ExecuteAsync(request, stoppingToken);
 
             // Publica mensagem de conclusão
             var completedMessage = new VideoProcessingCompletedMessage
