@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: optimus-transform-config
+data:
+  RabbitMQ__HostName: "rabbitmq.messaging.svc.cluster.local"
+  RabbitMQ__PrefetchCount: "2"
+  Storage__BucketName: "optimus-frame-core-bucket"
+  DOTNET_ENVIRONMENT: "Production"
