@@ -2,14 +2,17 @@
 
 # Esta fase é usada durante a execução no VS no modo rápido (Padrão para a configuração de Depuração)
 FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
-# Dependências de sistema exigidas pelo OpenCvSharpExtern.so no Linux
+# Dependências de sistema exigidas pelo OpenCvSharpExtern.so e pelo FFMpegCore no Linux
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    # OpenCV: suporte a janelas e paralelismo
     libglib2.0-0 \
     libgl1 \
     libgomp1 \
     libsm6 \
     libxrender1 \
     libxext6 \
+    # FFmpeg: necessário para OpenCV ler vídeos e para FFMpegCore
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 USER $APP_UID
 WORKDIR /app
@@ -19,7 +22,12 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+# Copia todos os .csproj antes do restore para que o NuGet resolva
+# dependências transitivas (incluindo OpenCvSharp4.runtime.linux) corretamente
 COPY ["OptimusFrame.Transform.Worker/OptimusFrame.Transform.Worker.csproj", "OptimusFrame.Transform.Worker/"]
+COPY ["OptimusFrame.Transform.Application/OptimusFrame.Transform.Application.csproj", "OptimusFrame.Transform.Application/"]
+COPY ["OptimusFrame.Transform.Infrastructure/OptimusFrame.Transform.Infrastructure.csproj", "OptimusFrame.Transform.Infrastructure/"]
+COPY ["OptimusFrame.Transform.Domain/OptimusFrame.Transform.Domain.csproj", "OptimusFrame.Transform.Domain/"]
 RUN dotnet restore "./OptimusFrame.Transform.Worker/OptimusFrame.Transform.Worker.csproj"
 COPY . .
 WORKDIR "/src/OptimusFrame.Transform.Worker"
