@@ -1,19 +1,38 @@
 # Acesse https://aka.ms/customizecontainer para saber como personalizar seu contêiner de depuração e como o Visual Studio usa este Dockerfile para criar suas imagens para uma depuração mais rápida.
 
 # Esta fase é usada durante a execução no VS no modo rápido (Padrão para a configuração de Depuração)
-FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
-# Dependências de sistema exigidas pelo OpenCvSharpExtern.so e pelo FFMpegCore no Linux
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    # OpenCV: suporte a janelas e paralelismo
-    libglib2.0-0 \
+# Ubuntu 22.04 Jammy: necessário para compatibilidade ABI com o libOpenCvSharpExtern.so
+# do pacote NuGet OpenCvSharp4.runtime.ubuntu.22.04-x64, que foi compilado contra
+# as libs OpenCV 4.5 do Ubuntu 22.04.
+FROM mcr.microsoft.com/dotnet/runtime:8.0-jammy AS base
+
+# Habilita repositório universe (contém os pacotes libopencv-*4.5d)
+RUN echo "deb http://archive.ubuntu.com/ubuntu jammy universe" \
+      > /etc/apt/sources.list.d/ubuntu-universe.list \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    # Bibliotecas OpenCV 4.5 (Ubuntu 22.04) — mesma versão do NuGet ubuntu.22.04-x64
+    libopencv-core4.5d \
+    libopencv-imgproc4.5d \
+    libopencv-imgcodecs4.5d \
+    libopencv-videoio4.5d \
+    libopencv-video4.5d \
+    # Suporte a OpenGL e paralelismo exigidos pelo wrapper nativo
     libgl1 \
     libgomp1 \
+    libglib2.0-0 \
     libsm6 \
     libxrender1 \
     libxext6 \
-    # FFmpeg: necessário para OpenCV ler vídeos e para FFMpegCore
+    # FFmpeg: binário exigido pelo FFMpegCore em runtime
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
+
+# Sem esta variável, dlopen("OpenCvSharpExtern") no Linux não procura em /app.
+# O .NET runtime forma paths explícitos via RuntimeEnvironment.GetRuntimeDirectory()
+# e depois cai no dlopen do sistema, que só acha a lib se ela estiver em
+# LD_LIBRARY_PATH, /etc/ld.so.cache ou diretórios padrão.
+ENV LD_LIBRARY_PATH=/app
+
 USER $APP_UID
 WORKDIR /app
 
