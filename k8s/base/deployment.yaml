@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: optimus-transform-worker
+  namespace: production
+  labels:
+    app.kubernetes.io/name: optimus-transform-worker
+    app.kubernetes.io/part-of: optimus-frame
+spec:
+  # Atenção: múltiplas réplicas processarão mensagens em paralelo.
+  # Certifique-se de que RabbitMQ__PrefetchCount está calibrado adequadamente.
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: optimus-transform-worker
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: optimus-transform-worker
+        app.kubernetes.io/part-of: optimus-frame
+    spec:
+      # Respeita graceful shutdown — espera o processamento da mensagem atual terminar
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: worker
+          # Nome de referência — substituído por ambiente via images: em cada overlay
+          image: ghcr.io/stack-food/optimus-frame-transform:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: optimus-transform-config
+            - secretRef:
+                name: optimus-transform-secret
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          # Este serviço é um Worker puro (sem HTTP).
+          # Liveness via processo: reinicia se o container travar completamente.
+          livenessProbe:
+            exec:
+              command:
+                - pgrep
+                - -f
+                - OptimusFrame.Transform.Worker.dll
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+      restartPolicy: Always

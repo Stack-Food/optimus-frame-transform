@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: optimus-transform-config
+  namespace: production
+  labels:
+    app.kubernetes.io/name: optimus-transform-worker
+    app.kubernetes.io/part-of: optimus-frame
+data:
+  # AWS
+  AWS__Region: "us-east-1"
+
+  # S3 Storage
+  Storage__BucketName: "optimus-frame-core-bucket"
+  Storage__InputFolder: "input"
+  Storage__OutputFolder: "output"
+
+  # RabbitMQ — altere HostName para o endereço do seu broker no cluster
+  RabbitMQ__HostName: "rabbitmq.messaging.svc.cluster.local"
+  RabbitMQ__Port: "5672"
+  RabbitMQ__VirtualHost: "/"
+  RabbitMQ__InputQueueName: "video-processing-queue"
+  RabbitMQ__CompletedQueueName: "video-processing-completed-queue"
+  RabbitMQ__AutoAck: "false"
+  RabbitMQ__PrefetchCount: "1"
+
+  # Runtime
+  DOTNET_ENVIRONMENT: "Production"
